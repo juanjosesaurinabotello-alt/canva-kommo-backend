@@ -78,6 +78,27 @@ Lista de leads capturados (seguimiento comercial). Filtro opcional `?unitId=UNIT
 - **Leads:** `src/services/leadsStore.js` persiste en un archivo JSON
   (`src/data/leads.json` por defecto, configurable con `LEADS_FILE`). No se versiona.
 
+## Despliegue en Vercel (frontend + API en un dominio)
+
+El repo incluye dos formas de servir la misma API:
+
+- **Servidor Express** (`src/`) para correr localmente con `npm start`.
+- **Serverless functions** (`api/`) que Vercel despliega automáticamente, con la
+  misma lógica (reusan `src/services/unitsStore.js` y `src/services/leadValidation.js`).
+
+`vercel.json` compila el frontend de `web/` (estático) y Vercel sirve `api/*` como
+funciones. Así un único deploy entrega la experiencia 3D **y** la API en vivo en el
+mismo dominio (la web llama a `/api/...` relativo).
+
+**Endpoints serverless:** `GET /api/health`, `GET /api/units`, `GET /api/units/:id`,
+`POST /api/leads`, `GET /api/leads`.
+
+**Persistencia de leads en serverless:**
+- Si se configuran `KV_REST_API_URL` + `KV_REST_API_TOKEN` (Vercel KV / Upstash Redis),
+  los leads se guardan ahí de forma durable.
+- Si no, se usan `/tmp` (efímero, se pierde entre invocaciones). Para producción real,
+  conectar Vercel KV en el dashboard del proyecto.
+
 ## Tests
 
 ```bash
