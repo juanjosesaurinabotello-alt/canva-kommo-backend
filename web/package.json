@@ -1,0 +1,18 @@
+{
+  "name": "atlantico-experiencia-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Experiencia interactiva 3D (web/WebGL) de ATLANTICO Splash Park / Resort, conectada al backend de disponibilidad y leads.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}

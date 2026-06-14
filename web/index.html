@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ATLANTICO · Experiencia interactiva</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <!-- Lienzo 3D -->
+    <canvas id="scene"></canvas>
+
+    <!-- Pantalla de carga / bienvenida -->
+    <div id="overlay-loading" class="overlay center">
+      <div class="brand">ATLANTICO</div>
+      <div class="brand-sub">Splash Park · Resort</div>
+      <div id="loading-text" class="loading-text">Cargando experiencia…</div>
+    </div>
+
+    <!-- Crosshair (solo en primera persona) -->
+    <div id="crosshair" class="crosshair hidden"></div>
+
+    <!-- Indicador de modo / ayuda -->
+    <div id="hint" class="hint hidden"></div>
+
+    <!-- Caption del recorrido guiado -->
+    <div id="tour-caption" class="tour-caption hidden">
+      <div id="tour-text"></div>
+      <div class="tour-controls">
+        <button id="tour-prev">‹ Anterior</button>
+        <button id="tour-next">Siguiente ›</button>
+        <button id="tour-exit">Salir del recorrido</button>
+      </div>
+    </div>
+
+    <!-- Menú inferior -->
+    <nav id="menu" class="menu hidden">
+      <button data-action="free">🚶 Recorrido libre</button>
+      <button data-action="aerial">🚁 Vista aérea</button>
+      <button data-action="tour">🎬 Recorrido guiado</button>
+      <button data-action="units">🏠 Unidades</button>
+      <button data-action="exit">✕ Salir</button>
+    </nav>
+
+    <!-- Panel lateral de unidades -->
+    <aside id="units-panel" class="units-panel hidden">
+      <header>
+        <h2>Unidades · Resort 1</h2>
+        <button id="units-close" class="icon-btn">✕</button>
+      </header>
+      <div class="filters">
+        <button data-estado="" class="active">Todas</button>
+        <button data-estado="available">Disponibles</button>
+        <button data-estado="reserved">Reservadas</button>
+        <button data-estado="sold">Vendidas</button>
+      </div>
+      <ul id="units-list"></ul>
+    </aside>
+
+    <!-- Ficha comercial de unidad -->
+    <div id="unit-card" class="modal hidden">
+      <div class="modal-box">
+        <button id="card-close" class="icon-btn close-abs">✕</button>
+        <div class="card-media"><img id="card-img" alt="Unidad" /></div>
+        <div class="card-body">
+          <span id="card-estado" class="badge"></span>
+          <h2 id="card-tipologia"></h2>
+          <div class="card-grid">
+            <div><label>Área</label><span id="card-area"></span></div>
+            <div><label>Precio</label><span id="card-precio"></span></div>
+            <div class="full"><label>Forma de pago</label><span id="card-pago"></span></div>
+          </div>
+          <button id="card-interest" class="cta">Me interesa</button>
+
+          <!-- Formulario de lead -->
+          <form id="lead-form" class="lead-form hidden">
+            <input id="lead-name" type="text" placeholder="Nombre y apellido" required />
+            <input id="lead-email" type="email" placeholder="Email" />
+            <input id="lead-phone" type="tel" placeholder="Teléfono / WhatsApp" />
+            <textarea id="lead-message" placeholder="Mensaje (opcional)"></textarea>
+            <button type="submit" class="cta">Enviar consulta</button>
+            <div id="lead-status" class="lead-status"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón flotante para reabrir el menú -->
+    <button id="menu-toggle" class="menu-toggle hidden">☰ Menú</button>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
