@@ -6,3 +6,6 @@ npm-debug.log*
 .DS_Store
 coverage/
 dist/
+
+# Leads persistidos en runtime (no versionar)
+src/data/leads.json

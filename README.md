@@ -1,11 +1,11 @@
 # canva-kommo-backend
 
-Backend de **disponibilidad de unidades** y **captura de leads** para la experiencia
-interactiva en Unreal Engine 5 del proyecto turistico-inmobiliario "Atlántico"
-(frontera Brasil–Uruguay), integrado con **Kommo CRM**.
+Backend **independiente** de **disponibilidad de unidades** y **captura de leads** para
+la experiencia interactiva en Unreal Engine 5 del proyecto turistico-inmobiliario
+"Atlántico" (frontera Brasil–Uruguay).
 
-La experiencia UE5 **no** habla con Kommo directamente: consume esta API. Asi se
-desacopla el motor 3D del CRM y se puede cambiar de CRM sin tocar el cliente Unreal.
+No depende de ningún CRM externo: la disponibilidad se sirve desde un dataset local y
+los leads se persisten en el propio backend. La experiencia UE5 consume esta API.
 
 > Documentación de la Fase 2 y del MVP UE5: ver `docs/`.
 
@@ -17,22 +17,16 @@ desacopla el motor 3D del CRM y se puede cambiar de CRM sin tocar el cliente Unr
 
 ```bash
 npm install
-cp .env.example .env   # editar credenciales de Kommo (opcional)
+cp .env.example .env   # opcional
 npm start              # o: npm run dev  (con --watch)
 ```
-
-### Modo MOCK (offline)
-
-Si `KOMMO_BASE_URL` o `KOMMO_ACCESS_TOKEN` no están seteados, el backend funciona en
-**modo mock**: `/api/units` sirve el seed local y `/api/leads` devuelve un id simulado
-sin llamar a Kommo. Ideal para demos del MVP sin internet ni credenciales.
 
 ## API
 
 ### `GET /health`
-Estado del servicio. `kommo` = `configured` | `mock`.
+Estado del servicio.
 ```json
-{ "status": "ok", "kommo": "mock" }
+{ "status": "ok" }
 ```
 
 ### `GET /api/units`
@@ -60,21 +54,29 @@ Lista de unidades. Filtro opcional `?estado=available|reserved|sold`.
 Una unidad por su `unitId`. `404` si no existe.
 
 ### `POST /api/leads`
-Crea un lead (botón "Me interesa" de la ficha). Requiere `name` y al menos `email`
-o `phone`. `unitId` y `message` son opcionales (si va `unitId`, debe existir).
+Crea y persiste un lead (botón "Me interesa" de la ficha). Requiere `name` y al menos
+`email` o `phone`. `unitId` y `message` son opcionales (si va `unitId`, debe existir).
 ```json
 // request
 { "name": "Juan Perez", "email": "juan@example.com", "phone": "+598 99 123 456",
   "unitId": "UNIT_101", "message": "Quiero info de financiacion" }
 // response 201
-{ "ok": true, "leadId": 123456, "mock": false }
+{ "ok": true,
+  "lead": { "id": "uuid", "name": "Juan Perez", "email": "juan@example.com",
+            "phone": "+598 99 123 456", "unitId": "UNIT_101",
+            "message": "Quiero info de financiacion", "createdAt": "2026-..." } }
 ```
 
-## Fuente de datos
+### `GET /api/leads`
+Lista de leads capturados (seguimiento comercial). Filtro opcional `?unitId=UNIT_101`.
 
-`src/services/unitsStore.js` sirve el seed `src/data/units.seed.json` (MVP).
-Para v1/v2 (disponibilidad en vivo desde Kommo) es el **único** módulo a cambiar:
-la API pública se mantiene igual.
+## Fuentes de datos
+
+- **Unidades:** `src/services/unitsStore.js` sirve `src/data/units.seed.json`.
+  Es el único módulo a cambiar si en el futuro la disponibilidad viene de otra fuente;
+  la API pública no cambia.
+- **Leads:** `src/services/leadsStore.js` persiste en un archivo JSON
+  (`src/data/leads.json` por defecto, configurable con `LEADS_FILE`). No se versiona.
 
 ## Tests
 
@@ -90,9 +92,9 @@ src/
   server.js              arranque del servidor
   config.js              carga de .env y config
   routes/units.js        GET /api/units, /api/units/:id
-  routes/leads.js        POST /api/leads
-  services/unitsStore.js fuente de disponibilidad (seed -> Kommo a futuro)
-  services/kommoClient.js cliente Kommo (con modo mock)
+  routes/leads.js        POST /api/leads, GET /api/leads
+  services/unitsStore.js fuente de disponibilidad (seed local)
+  services/leadsStore.js persistencia de leads (archivo JSON)
   middleware/errorHandler.js
   data/units.seed.json   5 unidades de ejemplo
 test/api.test.js

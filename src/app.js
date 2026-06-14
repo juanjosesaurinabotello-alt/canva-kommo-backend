@@ -1,6 +1,6 @@
 // Construccion de la app Express (exportada sin escuchar, para tests).
 import express from 'express';
-import { config, isKommoConfigured } from './config.js';
+import { config } from './config.js';
 import { unitsRouter } from './routes/units.js';
 import { leadsRouter } from './routes/leads.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
@@ -22,7 +22,7 @@ export function createApp() {
   // Healthcheck: util para monitoreo y para que la app UE5 detecte si hay
   // backend en vivo o debe caer a su cache offline.
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', kommo: isKommoConfigured ? 'configured' : 'mock' });
+    res.json({ status: 'ok' });
   });
 
   app.use('/api/units', unitsRouter);

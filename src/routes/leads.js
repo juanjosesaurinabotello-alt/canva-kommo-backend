@@ -1,7 +1,7 @@
-// Ruta de captura de leads. El boton "Me interesa" de la ficha comercial
-// en UE5 hace POST aqui; el backend crea el lead en Kommo.
+// Rutas de captura de leads. El boton "Me interesa" de la ficha comercial
+// en UE5 hace POST aqui; el backend persiste el lead localmente.
 import { Router } from 'express';
-import { createLead } from '../services/kommoClient.js';
+import { saveLead, listLeads } from '../services/leadsStore.js';
 import { getUnit } from '../services/unitsStore.js';
 
 export const leadsRouter = Router();
@@ -36,15 +36,22 @@ function parseLead(payload) {
 }
 
 // POST /api/leads
-leadsRouter.post('/', async (req, res, next) => {
+leadsRouter.post('/', (req, res, next) => {
   try {
     const lead = parseLead(req.body);
-    const result = await createLead(lead);
-    res.status(201).json({
-      ok: true,
-      leadId: result.id,
-      mock: Boolean(result.mock),
-    });
+    const record = saveLead(lead);
+    res.status(201).json({ ok: true, lead: record });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/leads?unitId=UNIT_101  (seguimiento comercial)
+leadsRouter.get('/', (req, res, next) => {
+  try {
+    const unitId = typeof req.query.unitId === 'string' ? req.query.unitId : undefined;
+    const leads = listLeads({ unitId });
+    res.json({ count: leads.length, leads });
   } catch (err) {
     next(err);
   }

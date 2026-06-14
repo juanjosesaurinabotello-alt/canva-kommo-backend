@@ -30,15 +30,4 @@ loadDotEnv();
 export const config = {
   port: Number(process.env.PORT) || 3000,
   corsOrigin: process.env.CORS_ORIGIN || '*',
-  kommo: {
-    baseUrl: process.env.KOMMO_BASE_URL || '',
-    accessToken: process.env.KOMMO_ACCESS_TOKEN || '',
-    pipelineId: process.env.KOMMO_PIPELINE_ID || '',
-    statusId: process.env.KOMMO_STATUS_ID || '',
-  },
 };
-
-// El backend opera en modo mock cuando faltan credenciales de Kommo.
-export const isKommoConfigured = Boolean(
-  config.kommo.baseUrl && config.kommo.accessToken,
-);

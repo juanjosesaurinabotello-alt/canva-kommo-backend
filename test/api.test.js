@@ -1,7 +1,16 @@
 // Tests de integracion de la API usando el test runner nativo de Node.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../src/app.js';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { rmSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+
+// Aislar el archivo de leads en un temporal antes de importar la app.
+const leadsFile = join(tmpdir(), `leads-test-${randomUUID()}.json`);
+process.env.LEADS_FILE = leadsFile;
+
+const { createApp } = await import('../src/app.js');
 
 let server;
 let baseUrl;
@@ -18,6 +27,7 @@ before(async () => {
 
 after(() => {
   server.close();
+  rmSync(leadsFile, { force: true });
 });
 
 test('GET /health responde ok', async () => {
@@ -59,7 +69,7 @@ test('GET /api/units/:id inexistente devuelve 404', async () => {
   assert.equal(res.status, 404);
 });
 
-test('POST /api/leads valido crea lead (mock)', async () => {
+test('POST /api/leads valido persiste el lead', async () => {
   const res = await fetch(`${baseUrl}/api/leads`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -73,8 +83,23 @@ test('POST /api/leads valido crea lead (mock)', async () => {
   assert.equal(res.status, 201);
   const body = await res.json();
   assert.equal(body.ok, true);
-  assert.equal(body.mock, true);
-  assert.ok(body.leadId);
+  assert.ok(body.lead.id);
+  assert.ok(body.lead.createdAt);
+  assert.equal(body.lead.unitId, 'UNIT_101');
+});
+
+test('GET /api/leads lista los leads guardados', async () => {
+  const res = await fetch(`${baseUrl}/api/leads`);
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.ok(body.count >= 1);
+  assert.ok(body.leads.some((l) => l.email === 'juan@example.com'));
+});
+
+test('GET /api/leads?unitId filtra por unidad', async () => {
+  const res = await fetch(`${baseUrl}/api/leads?unitId=UNIT_101`);
+  const body = await res.json();
+  assert.ok(body.leads.every((l) => l.unitId === 'UNIT_101'));
 });
 
 test('POST /api/leads sin contacto devuelve 400', async () => {

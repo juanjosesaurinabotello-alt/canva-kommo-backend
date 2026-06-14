@@ -1,7 +1,7 @@
 {
   "name": "canva-kommo-backend",
   "version": "0.1.0",
-  "description": "Backend de disponibilidad de unidades y captura de leads para la experiencia UE5 (proyecto Atlantico), integrado con Kommo CRM.",
+  "description": "Backend independiente de disponibilidad de unidades y captura de leads para la experiencia UE5 (proyecto Atlantico).",
   "type": "module",
   "main": "src/server.js",
   "engines": {
