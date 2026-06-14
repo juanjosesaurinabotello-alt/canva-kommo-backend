@@ -1,5 +1,9 @@
 // Orquestacion de la experiencia ATLANTICO (web).
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { createWorld } from './scene.js';
 import { setupControls } from './controls.js';
 import { createHotspots, pickHotspot, animateHotspots } from './hotspots.js';
@@ -14,6 +18,20 @@ const canvas = document.getElementById('scene');
 const world = createWorld(canvas);
 const controls = setupControls(world.camera, canvas);
 const tour = createTour(world.camera);
+
+// --- Postproduccion: bloom cinematografico sutil ---
+const composer = new EffectComposer(world.renderer);
+composer.addPass(new RenderPass(world.scene, world.camera));
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.45, // strength
+  0.5,  // radius
+  0.85, // threshold
+);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+let timeOfDay = 'day';
 
 const raycaster = new THREE.Raycaster();
 const ndc = new THREE.Vector2();
@@ -85,6 +103,7 @@ document.getElementById('menu').addEventListener('click', (e) => {
     case 'aerial': setMode('aerial'); break;
     case 'tour': setMode('tour'); break;
     case 'units': toggleUnitsPanel(true); break;
+    case 'ambiente': toggleTimeOfDay(e); break;
     case 'exit': exitExperience(); break;
   }
 });
@@ -97,6 +116,13 @@ document.getElementById('card-close').addEventListener('click', closeUnitCard);
 document.getElementById('tour-next').addEventListener('click', () => tour.next());
 document.getElementById('tour-prev').addEventListener('click', () => tour.prev());
 document.getElementById('tour-exit').addEventListener('click', () => setMode('aerial'));
+
+function toggleTimeOfDay(e) {
+  timeOfDay = timeOfDay === 'day' ? 'sunset' : 'day';
+  world.setTimeOfDay(timeOfDay);
+  const btn = e.target.closest('button');
+  if (btn) btn.textContent = timeOfDay === 'day' ? '🌅 Atardecer' : '☀️ Día';
+}
 
 function exitExperience() {
   document.getElementById('menu').classList.add('hidden');
@@ -122,6 +148,7 @@ window.addEventListener('resize', () => {
   world.camera.aspect = window.innerWidth / window.innerHeight;
   world.camera.updateProjectionMatrix();
   world.renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // --- Loop de render ---
@@ -134,7 +161,7 @@ function animate() {
   tour.update(dt);
   world.update(dt, elapsed);
   animateHotspots(hotspots, elapsed);
-  world.renderer.render(world.scene, world.camera);
+  composer.render();
 }
 
 boot();
